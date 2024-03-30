@@ -7,6 +7,8 @@ Query templates can contain variables, and you can set them when you run the pro
 
 ## Templates
 
+The **defaults** key describes default values of a template. This values will be set for **all** templates without defined fields. If you don't need to set any default values, leave it blank. 
+
 Templates should be described in the json file in the key **templates**.
 Each request must contain the mandatory **target** field with the URL of the target host.
 There are also optional fields that allow you to specify request fields, such as headers or request type.
@@ -16,11 +18,12 @@ There are also optional fields that allow you to specify request fields, such as
 |Key|Description|
 |-|--------|
 | target | target URL
-| description | optional description of the request
-| the | request method (get/post/etc.) is used by default **get**
+| description | description of the request
+| method | HTTP request method (get/post/etc.). **GET** by default
 | headings | list of headers
 | cookies | list of cookies
-| delay | delay specified time in milliseconds before the request
+| delay | delay in milliseconds before the request
+| timeout | request timeout in milliseconds
 | log | message to display on request
 | response.log | message to display on response
 
@@ -34,9 +37,17 @@ See [example.json](assets/example.json)
 
 ## Build
 
-`go to build -o oct cmd/main`
+`go build -o oct cmd/main`
 
-## Execution
+### Arguments
+
+|Key|Description|
+|-|--------|
+| f | Templates file path
+| v | Define a variable
+| p | Parallelism level
+
+## Run
 
 `./oct -v "host:http://192.168.1.29:3000 " -v "token:123" -f example.json`
 

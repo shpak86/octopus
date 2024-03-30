@@ -1,0 +1,42 @@
+{
+    "defaults": {
+        "delay": "2000",
+        "log": "request",
+        "response": {
+            "log": "response"
+        }
+    },
+    "templates": [
+        {
+            "description": "Simple ping request",
+            "target": "${host}/ping",
+            "method": "get",
+            "log": "Ping ${host}",
+            "response": {
+                "log": "Ping ${host}: ${respCode}"
+            }
+        },
+        {
+            "description": "Request users list after 2 seconds",
+            "target": "${host}/api/v1/users",
+            "method": "post",
+            "headers": [
+                {
+                    "name": "X-Forwarded-For",
+                    "value": "10.1.1.2"
+                }
+            ],
+            "cookies": [
+                {
+                    "name": "Token",
+                    "value": "${token}"
+                }
+            ],
+            "delay": "1",
+            "log": "Request users ${host}",
+            "response": {
+                "log": "Users: ${respBody}"
+            }
+        }
+    ]
+}

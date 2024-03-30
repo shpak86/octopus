@@ -9,11 +9,13 @@ import (
 )
 
 type templatesFileBody struct {
+	Defaults  Template   `json:"defaults"`
 	Templates []Template `json:"templates"`
 }
 
 type TemplatesRepository struct {
 	mu        sync.Mutex
+	defaults  Template
 	templates []Template
 	idx       int
 }
@@ -72,11 +74,42 @@ func (b *TemplatesRepositoryBuilder) Build() *TemplatesRepository {
 	if file, err := os.ReadFile(b.path); err == nil {
 		var body templatesFileBody
 		json.Unmarshal(file, &body)
+		b.repo.defaults = body.Defaults
 		b.repo.templates = body.Templates
+		for idx := 0; idx < len(b.repo.templates); idx++ {
+			mergeDefaults(&b.repo.templates[idx], &b.repo.defaults)
+		}
 	} else {
 		log.Fatalln("Unable to build templates", "error", err)
 	}
 	b.repo.inject(b.variables)
 	log.Println("Loaded templates", "size", len(b.repo.templates), "variables", b.variables)
 	return b.repo
+}
+
+func mergeDefaults(template *Template, defaults *Template) {
+	if defaults.Target != nil && template.Target == nil {
+		template.Target = defaults.Target
+	}
+	if defaults.Cookies != nil && template.Cookies == nil {
+		template.Cookies = defaults.Cookies
+	}
+	if defaults.Headers != nil && template.Headers == nil {
+		template.Headers = defaults.Headers
+	}
+	if defaults.Delay != nil && template.Delay == nil {
+		template.Delay = defaults.Delay
+	}
+	if defaults.Log != nil && template.Log == nil {
+		template.Log = defaults.Log
+	}
+	if defaults.Timeout != nil && template.Timeout == nil {
+		template.Timeout = defaults.Timeout
+	}
+	if defaults.Method != nil && template.Method == nil {
+		template.Method = defaults.Method
+	}
+	if defaults.Response != nil && template.Response == nil {
+		template.Response = defaults.Response
+	}
 }

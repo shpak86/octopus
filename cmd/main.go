@@ -7,7 +7,6 @@ import (
 	"octopus/internal/requests"
 	"octopus/internal/templates"
 	"strings"
-	"time"
 )
 
 type VarArg map[string]string
@@ -26,9 +25,9 @@ func (v *VarArg) Set(value string) error {
 }
 
 type Args struct {
-	path      *string
-	variables VarArg
-	delay     *int
+	path        *string
+	variables   VarArg
+	parallelism *int
 }
 
 func parseArgs() *Args {
@@ -37,7 +36,7 @@ func parseArgs() *Args {
 	}
 	flag.Var(&args.variables, "v", "Define a variable. Example -v=\"key:value\"")
 	args.path = flag.String("f", "", "Templates file path")
-	args.delay = flag.Int("d", 1, "Delay between requests in milliseconds")
+	args.parallelism = flag.Int("p", 1, "Parallelism level")
 	flag.Parse()
 	return &args
 }
@@ -50,7 +49,7 @@ func main() {
 		Build()
 	manager := requests.NewHttpRequestsManagerBuilder().
 		Templates(repo).
-		DefaultDelay(time.Duration(*args.delay) * time.Millisecond).
+		Parallelism(*args.parallelism).
 		Build()
 	manager.Execute()
 }

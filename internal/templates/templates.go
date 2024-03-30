@@ -15,11 +15,10 @@ type ResponseTemplate struct {
 
 type Template struct {
 	Target   *string            `json:"target"`
-	Url      *string            `json:"url"`
 	Method   *string            `json:"method"`
-	Version  *string            `json:"version"`
 	Delay    *string            `json:"delay"`
 	Log      *string            `json:"log"`
+	Timeout  *string            `json:"timeout"`
 	Response *ResponseTemplate  `json:"response"`
 	Cookies  []KeyValueTemplate `json:"cookies"`
 	Headers  []KeyValueTemplate `json:"headers"`
@@ -29,11 +28,10 @@ func (template *Template) Inject(variables map[string]string) {
 	for name, value := range variables {
 		variable := "${" + name + "}"
 		injectVariable(template.Target, variable, value)
-		injectVariable(template.Url, variable, value)
 		injectVariable(template.Method, variable, value)
-		injectVariable(template.Version, variable, value)
 		injectVariable(template.Delay, variable, value)
 		injectVariable(template.Log, variable, value)
+		injectVariable(template.Timeout, variable, value)
 		if template.Response != nil && template.Response.Log != nil {
 			injectVariable(template.Response.Log, variable, value)
 		}
