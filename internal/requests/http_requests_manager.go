@@ -12,14 +12,13 @@ type responseData struct {
 type HttpRequestsManager struct {
 	templates    *templates.TemplatesRepository
 	threads      int
-	requestsChan chan templates.Template
+	requestsChan chan templates.HttpRequestTemplate
 }
 
 func (m *HttpRequestsManager) Execute() {
-	m.requestsChan = make(chan templates.Template, m.threads)
+	m.requestsChan = make(chan templates.HttpRequestTemplate, m.threads)
 	for t := 0; t < m.threads; t++ {
-		sender := *NewRequestSender(m.requestsChan)
-		sender.Serve()
+		NewRequestSender().Serve(m.requestsChan)
 	}
 	template, exists := m.templates.Next()
 	for exists {
@@ -52,6 +51,6 @@ func (b *HttpRequestsManagerBuilder) Build() *HttpRequestsManager {
 	if b.manager.threads <= 0 {
 		b.manager.threads = 1
 	}
-	b.manager.requestsChan = make(chan templates.Template, b.manager.threads)
+	b.manager.requestsChan = make(chan templates.HttpRequestTemplate, b.manager.threads)
 	return b.manager
 }

@@ -9,18 +9,19 @@ import (
 )
 
 type templatesFileBody struct {
-	Defaults  Template   `json:"defaults"`
-	Templates []Template `json:"templates"`
+	Defaults  HttpRequestTemplate   `json:"defaults"`
+	Templates []HttpRequestTemplate `json:"templates"`
 }
 
 type TemplatesRepository struct {
 	mu        sync.Mutex
-	defaults  Template
-	templates []Template
+	defaults  HttpRequestTemplate
+	templates []HttpRequestTemplate
 	idx       int
 }
 
-func (r *TemplatesRepository) Next() (template *Template, exists bool) {
+// Return next template
+func (r *TemplatesRepository) Next() (template *HttpRequestTemplate, exists bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	exists = r.idx != len(r.templates)
@@ -32,7 +33,8 @@ func (r *TemplatesRepository) Next() (template *Template, exists bool) {
 	return
 }
 
-func (r *TemplatesRepository) Random() (template Template) {
+// Return random template
+func (r *TemplatesRepository) Random() (template HttpRequestTemplate) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.idx = rand.Intn(len(r.templates))
@@ -40,6 +42,7 @@ func (r *TemplatesRepository) Random() (template Template) {
 	return
 }
 
+// Inject variables to the all templates
 func (r *TemplatesRepository) inject(variables map[string]string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -48,6 +51,7 @@ func (r *TemplatesRepository) inject(variables map[string]string) {
 	}
 }
 
+// Templates repository builder helper
 type TemplatesRepositoryBuilder struct {
 	repo      *TemplatesRepository
 	path      string
@@ -59,16 +63,19 @@ func NewTemplatesRepositoryBuilder() *TemplatesRepositoryBuilder {
 	return &repo
 }
 
+// Load templates file
 func (b *TemplatesRepositoryBuilder) LoadFile(path string) *TemplatesRepositoryBuilder {
 	b.path = path
 	return b
 }
 
+// Inject variables
 func (b *TemplatesRepositoryBuilder) Inject(variables map[string]string) *TemplatesRepositoryBuilder {
 	b.variables = variables
 	return b
 }
 
+// Build repository
 func (b *TemplatesRepositoryBuilder) Build() *TemplatesRepository {
 	b.repo = &TemplatesRepository{}
 	if file, err := os.ReadFile(b.path); err == nil {
@@ -87,7 +94,7 @@ func (b *TemplatesRepositoryBuilder) Build() *TemplatesRepository {
 	return b.repo
 }
 
-func mergeDefaults(template *Template, defaults *Template) {
+func mergeDefaults(template *HttpRequestTemplate, defaults *HttpRequestTemplate) {
 	if defaults.Target != nil && template.Target == nil {
 		template.Target = defaults.Target
 	}

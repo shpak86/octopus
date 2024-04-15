@@ -11,14 +11,16 @@ import (
 )
 
 type RequestSender struct {
-	templatesChannel chan templates.Template
+	templatesChannel chan templates.HttpRequestTemplate
 }
 
-func NewRequestSender(templatesChannel chan templates.Template) *RequestSender {
-	return &RequestSender{templatesChannel: templatesChannel}
+func NewRequestSender() *RequestSender {
+	return &RequestSender{}
 }
 
-func (rs *RequestSender) Serve() {
+// Serve messages from the channel. All messages will be sent my the `RequestSender“.
+func (rs *RequestSender) Serve(templatesChannel chan templates.HttpRequestTemplate) {
+	rs.templatesChannel = templatesChannel
 	go func() {
 		for template := range rs.templatesChannel {
 			rs.prepareRequest(&template)
@@ -28,7 +30,8 @@ func (rs *RequestSender) Serve() {
 	}()
 }
 
-func (rs *RequestSender) send(template *templates.Template) (respData responseData, err error) {
+// Send template with specified options
+func (rs *RequestSender) send(template *templates.HttpRequestTemplate) (respData responseData, err error) {
 	httpClient := &http.Client{}
 	var request *http.Request
 	if template.Timeout != nil {
@@ -56,7 +59,7 @@ func (rs *RequestSender) send(template *templates.Template) (respData responseDa
 	return
 }
 
-func (rs *RequestSender) prepareRequest(template *templates.Template) {
+func (rs *RequestSender) prepareRequest(template *templates.HttpRequestTemplate) {
 	if template.Delay != nil {
 		if ms, err := strconv.Atoi(*template.Delay); err == nil {
 			time.Sleep(time.Duration(ms) * time.Millisecond)
@@ -67,7 +70,7 @@ func (rs *RequestSender) prepareRequest(template *templates.Template) {
 	}
 }
 
-func (rs *RequestSender) report(template *templates.Template, respData *responseData, err error) {
+func (rs *RequestSender) report(template *templates.HttpRequestTemplate, respData *responseData, err error) {
 	if err != nil {
 		log.Println(err)
 	} else if template.Response != nil && template.Response.Log != nil {
